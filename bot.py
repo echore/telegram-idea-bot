@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import re
 
+import requests
 from dotenv import load_dotenv
 from notion_client import Client
 
@@ -80,8 +81,6 @@ def create_idea_page(raw_text: str) -> str:
     )
     return response["url"]
 
-
-import requests
 
 TELEGRAM_API = "https://api.telegram.org/bot{token}/{method}"
 

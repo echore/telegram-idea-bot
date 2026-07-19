@@ -86,6 +86,30 @@ def test_run_once_empty_no_confirm():
     assert count == 0
 
 
+def test_handle_text_returns_error_string_on_failure(monkeypatch):
+    def fake_create_idea_page(text):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(bot, "create_idea_page", fake_create_idea_page)
+
+    result = bot.handle_text("some idea")
+
+    assert isinstance(result, str)
+    assert result.startswith("存入失败：")
+
+
+def test_handle_text_returns_success_message(monkeypatch):
+    def fake_create_idea_page(text):
+        return "https://notion.so/x"
+
+    monkeypatch.setattr(bot, "create_idea_page", fake_create_idea_page)
+
+    result = bot.handle_text("买菜")
+
+    assert "已存入想法库" in result
+    assert "https://notion.so/x" in result
+
+
 def test_run_once_advances_offset_even_on_failure():
     sent = []
 
