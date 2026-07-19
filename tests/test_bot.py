@@ -27,3 +27,26 @@ def test_build_body_blocks_contains_raw_text():
     assert "Raw Capture" in texts
     assert "Next Step" in texts
     assert "Notes" in texts
+
+
+def test_create_idea_page_builds_properties(monkeypatch):
+    captured = {}
+
+    class FakePages:
+        def create(self, **kwargs):
+            captured.update(kwargs)
+            return {"url": "https://notion.so/fake"}
+
+    class FakeNotion:
+        pages = FakePages()
+
+    monkeypatch.setattr(bot, "notion", FakeNotion())
+    monkeypatch.setattr(bot, "IDEA_DATABASE_ID", "db123")
+
+    url = bot.create_idea_page("买菜的想法")
+
+    assert url == "https://notion.so/fake"
+    assert captured["parent"] == {"database_id": "db123"}
+    props = captured["properties"]
+    assert props[bot.IDEA_TITLE_PROPERTY]["title"][0]["text"]["content"] == "买菜的想法"
+    assert props[bot.IDEA_STATUS_PROPERTY]["select"]["name"] == bot.DEFAULT_STATUS

@@ -61,3 +61,21 @@ def build_body_blocks(raw_text: str) -> list[dict]:
         heading("Notes"),
         para("补充背景、判断、延伸方向。"),
     ]
+
+
+notion = Client(auth=NOTION_TOKEN) if NOTION_TOKEN else None
+
+
+def create_idea_page(raw_text: str) -> str:
+    title = summarize_title(raw_text)
+    properties = {
+        IDEA_TITLE_PROPERTY: {"title": [{"text": {"content": title}}]},
+        IDEA_STATUS_PROPERTY: {"select": {"name": DEFAULT_STATUS}},
+        IDEA_CATEGORY_PROPERTY: {"multi_select": [{"name": DEFAULT_CATEGORY}]},
+    }
+    response = notion.pages.create(
+        parent={"database_id": IDEA_DATABASE_ID},
+        properties=properties,
+        children=build_body_blocks(raw_text),
+    )
+    return response["url"]
