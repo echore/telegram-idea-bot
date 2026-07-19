@@ -50,3 +50,66 @@ def test_create_idea_page_builds_properties(monkeypatch):
     props = captured["properties"]
     assert props[bot.IDEA_TITLE_PROPERTY]["title"][0]["text"]["content"] == "买菜的想法"
     assert props[bot.IDEA_STATUS_PROPERTY]["select"]["name"] == bot.DEFAULT_STATUS
+
+
+def test_run_once_processes_and_confirms_offset():
+    calls = {"get_updates": [], "sent": []}
+
+    fake_updates = [
+        {"update_id": 101, "message": {"chat": {"id": 5}, "text": "想法一"}},
+        {"update_id": 102, "message": {"chat": {"id": 5}, "text": "想法二"}},
+    ]
+
+    def fake_get_updates(token, offset=None, timeout=0):
+        calls["get_updates"].append(offset)
+        return fake_updates if offset is None else []
+
+    def fake_send(token, chat_id, text):
+        calls["sent"].append((chat_id, text))
+        return {}
+
+    def fake_handle(text):
+        return f"已存入：{text}"
+
+    count = bot.run_once("T", fake_get_updates, fake_send, fake_handle)
+
+    assert count == 2
+    assert calls["get_updates"] == [None, 103]  # 拉取 + 用 last+1 确认
+    assert calls["sent"] == [(5, "已存入：想法一"), (5, "已存入：想法二")]
+
+
+def test_run_once_empty_no_confirm():
+    def fake_get_updates(token, offset=None, timeout=0):
+        return []
+
+    count = bot.run_once("T", fake_get_updates, lambda *a: {}, lambda t: "")
+    assert count == 0
+
+
+def test_run_once_advances_offset_even_on_failure():
+    sent = []
+
+    def fake_get_updates(token, offset=None, timeout=0):
+        if offset is None:
+            return [{"update_id": 200, "message": {"chat": {"id": 1}, "text": "毒消息"}}]
+        return []
+
+    def fake_handle(text):
+        raise RuntimeError("notion 挂了")
+
+    # handle_text 内部已捕获异常并返回错误串，这里验证 run_once 不因单条失败中断 offset 推进
+    def safe_handle(text):
+        try:
+            return fake_handle(text)
+        except Exception as exc:
+            return f"存入失败：{exc}"
+
+    confirmed = []
+
+    def track_get_updates(token, offset=None, timeout=0):
+        confirmed.append(offset)
+        return fake_get_updates(token, offset, timeout)
+
+    bot.run_once("T", track_get_updates, lambda t, c, x: sent.append(x), safe_handle)
+    assert confirmed == [None, 201]
+    assert sent == ["存入失败：notion 挂了"]

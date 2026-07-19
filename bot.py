@@ -79,3 +79,56 @@ def create_idea_page(raw_text: str) -> str:
         children=build_body_blocks(raw_text),
     )
     return response["url"]
+
+
+import requests
+
+TELEGRAM_API = "https://api.telegram.org/bot{token}/{method}"
+
+
+def get_updates(token, offset=None, timeout=0):
+    params = {"timeout": timeout, "allowed_updates": '["message"]'}
+    if offset is not None:
+        params["offset"] = offset
+    resp = requests.get(TELEGRAM_API.format(token=token, method="getUpdates"), params=params, timeout=30)
+    resp.raise_for_status()
+    return resp.json()["result"]
+
+
+def send_message(token, chat_id, text):
+    resp = requests.post(
+        TELEGRAM_API.format(token=token, method="sendMessage"),
+        json={"chat_id": chat_id, "text": text},
+        timeout=30,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+def handle_text(text: str) -> str:
+    try:
+        page_url = create_idea_page(text)
+    except Exception as exc:  # 失败也要回一句，让用户可手动补发
+        return f"存入失败：{exc}"
+    return f"已存入想法库\n标题：{summarize_title(text)}\n状态：{DEFAULT_STATUS}\n链接：{page_url}"
+
+
+def run_once(token, get_updates_fn=get_updates, send_message_fn=send_message, handle_text_fn=handle_text) -> int:
+    updates = get_updates_fn(token, offset=None)
+    if not updates:
+        return 0
+    last_update_id = None
+    for update in updates:
+        last_update_id = update["update_id"]
+        message = update.get("message")
+        if not message:
+            continue
+        chat_id = message["chat"]["id"]
+        text = (message.get("text") or "").strip()
+        if not text:
+            send_message_fn(token, chat_id, "发一段文字就行，我会把它作为一条想法存进 Notion。")
+            continue
+        send_message_fn(token, chat_id, handle_text_fn(text))
+    if last_update_id is not None:  # 确认该批已消费，失败与否都推进
+        get_updates_fn(token, offset=last_update_id + 1)
+    return len(updates)
