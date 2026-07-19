@@ -1,70 +1,37 @@
-# Telegram Idea Bot
+# Telegram → Notion 想法捕获 bot
 
-This project is a standalone Telegram-to-Notion idea capture bot.
+在 Telegram 随手发一段文字，几分钟内自动存进你的 Notion 想法库，
+自动生成标题和页面结构。跑在 GitHub Actions 上，永久免费，无需服务器。
 
-## What it does
+## 它怎么工作
+GitHub Actions 每 15 分钟触发一次，拉取这段时间你发的消息，逐条写进
+Notion，然后退出。不是实时的——通常几分钟到二十几分钟内进库。
 
-Send any free-form idea to a Telegram bot. The bot creates a new page in a Notion ideas database.
+## 自助部署（约 10 分钟）
 
-For each message:
+1. **建 Telegram bot**：Telegram 里找 @BotFather，发 `/newbot`，
+   按提示拿到 bot token。
+2. **建 Notion integration**：https://www.notion.so/my-integrations
+   新建 integration，复制 secret。建一个数据库（至少含标题、Status、
+   Category 字段），在数据库右上 ··· → Connections 里把 integration
+   连上，复制数据库 ID（URL 里那段 32 位字符）。
+3. **Fork 本仓库**。
+4. **填 Secrets**：仓库 Settings → Secrets and variables → Actions，
+   新建三个：`TELEGRAM_BOT_TOKEN`、`NOTION_TOKEN`、
+   `IDEA_NOTION_DATABASE_ID`。
+5. **启用 Actions**：仓库 Actions 页，点 "I understand... enable"。
+6. **测试**：给你的 bot 发一段话，最多 15 分钟看 Notion。也可以到
+   Actions 页手动点 "Run workflow" 立即触发一次。
 
-1. It uses the first line or first sentence as the page title.
-2. It creates a new page in the ideas database.
-3. It sets the default database properties:
-   - `Status = Raw`
-   - `Category = Random`
-4. It writes the original message into the page body under:
-   - `Raw Capture`
-   - `Next Step`
-   - `Notes`
+## 自定义字段名
+若你的 Notion 字段不叫 Idea/Status/Category，可在 Secrets 里额外设
+`IDEA_TITLE_PROPERTY` / `IDEA_STATUS_PROPERTY` / `IDEA_CATEGORY_PROPERTY`
+等（见 `.env.example`）。
 
-## Files
+## 已知限制
+- cron 高峰期可能延迟 5–20 分钟。
+- 仓库 60 天无提交，GitHub 会自动暂停定时任务并发邮件，点一下即可恢复。
 
-- `idea_bot.py`: main bot entrypoint
-- `requirements.txt`: Python dependencies
-- `runtime.txt`: pinned Python runtime for deployment
-- `.env.example`: environment variable template
-- `.gitignore`: local ignore rules
-- `README.md`: setup and deployment overview
-- `NOTES.md`: handoff notes
-- `IMPLEMENTATION_GUIDE.md`: design and implementation details
-
-## Required environment variables
-
-- `TELEGRAM_BOT_TOKEN`
-- `NOTION_TOKEN`
-- `IDEA_NOTION_DATABASE_ID`
-
-Optional variables are already shown in `.env.example`.
-
-## Local setup
-
-1. Copy `.env.example` to `.env`.
-2. Fill in the required environment variables.
-3. Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-4. Run the bot:
-
-```bash
-python idea_bot.py
-```
-
-## Railway deployment
-
-This bot is intended to run as a long-lived Railway service.
-
-Use these settings:
-
-- Start command: `python idea_bot.py`
-- Python runtime: from `runtime.txt`
-- Variables: set `TELEGRAM_BOT_TOKEN`, `NOTION_TOKEN`, and `IDEA_NOTION_DATABASE_ID` in Railway
-
-## Safety note
-
-Do not commit `.env`.
-Do not paste tokens or secrets into chat logs.
-Do not hardcode real database IDs or API credentials into public config files.
+## 本地开发
+复制 `.env.example` 为 `.env` 填入真实值，然后 `pip install -r
+requirements.txt && python bot.py`。`.env` 已被 `.gitignore` 忽略。
