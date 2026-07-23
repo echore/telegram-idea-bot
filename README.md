@@ -63,9 +63,9 @@ it up:
 
 ## What Lands in Notion
 
-Each message becomes one page. The first sentence becomes the title, `Status` is
-set to `Raw`, `Category` to `Random`, and the body arrives pre-sectioned so that
-the page is ready to think in later:
+Each message becomes one page. The first sentence becomes the title, the status
+is set to your status column's first option, the category is left empty, and the
+body arrives pre-sectioned so that the page is ready to think in later:
 
 ```md
 ## Raw Capture
@@ -79,8 +79,8 @@ Background, judgement, directions to extend.
 ```
 
 The intent is to capture now and organize later. Sorting ideas at the moment of
-capture is exactly the friction this tool removes, so the bot never asks you to
-pick a category.
+capture is exactly the friction this tool removes, so the bot leaves the category
+empty for you to fill during review.
 
 <!-- SCREENSHOT 2: a real Notion page created by the bot, showing the three sections and the property bar -->
 
@@ -91,18 +91,15 @@ programming, no server, no credit card.
 
 ### 1. Prepare the Notion Database
 
-Create a database in Notion with three properties:
+Create a database with a title property and, if you want them, a **select**
+property for status and a **multi-select** property for category. Name them
+anything, in any language. The bot reads your database structure and matches
+columns by type, not by name, so a Chinese `想法 / 状态 / 分类` and an English
+`Idea / Status / Category` both work with no configuration. Rename a column
+later and nothing breaks.
 
-| Property | Type | Purpose |
-|---|---|---|
-| `Idea` | Title | the generated title |
-| `Status` | Select | how far the idea has gotten |
-| `Category` | Multi-select | rough grouping |
-
-Suggested `Status` options are `Raw`, `Developing`, `Dormant`, and `Discarded`.
-Suggested `Category` options are `Product`, `Business`, `Content`, `Research`,
-`Life`, and `Random`. Property names are configurable later, so use your own if
-you prefer.
+Only the title is required. If there is no status or category column, the bot
+simply skips it and still saves the idea.
 
 <!-- TODO: add one-click template link here once the Notion template is published -->
 
@@ -167,17 +164,25 @@ Notion and the bot replies with a link. If you would rather not wait, open
 
 ## Customizing
 
-If your database uses different property names, add more secrets to override the
-defaults. Every variable in [`.env.example`](.env.example) works as a repository
-secret:
+You should not need to configure column names at all: the bot detects them by
+type. New pages get the status column's **first option** as their status
+(whatever you named it, in whatever language), and no category, so you tag ideas
+yourself when you review them. Send a message containing a link and, if your
+database has a URL column, the link lands there too.
+
+The overrides exist for one case: a database with two columns of the same type,
+where auto-detection cannot tell which is which (a `Status` select next to a
+`Priority` select). Then name the right one explicitly. Every variable in
+[`.env.example`](.env.example) works as a repository secret:
 
 | Secret | Default | What It Sets |
 |---|---|---|
-| `IDEA_TITLE_PROPERTY` | `Idea` | the title property |
-| `IDEA_STATUS_PROPERTY` | `Status` | the status property |
-| `IDEA_CATEGORY_PROPERTY` | `Category` | the category property |
-| `IDEA_DEFAULT_STATUS` | `Raw` | status given to new pages |
-| `IDEA_DEFAULT_CATEGORY` | `Random` | category given to new pages |
+| `IDEA_TITLE_PROPERTY` | auto (the title column) | which column holds the title |
+| `IDEA_STATUS_PROPERTY` | auto (the select column) | which column holds status |
+| `IDEA_CATEGORY_PROPERTY` | auto (the multi-select column) | which column holds category |
+| `IDEA_URL_PROPERTY` | auto (the url column) | which column holds a link |
+| `IDEA_DEFAULT_STATUS` | the status column's first option | status given to new pages |
+| `IDEA_DEFAULT_CATEGORY` | empty | category given to new pages |
 | `IDEA_MAX_TITLE_LENGTH` | `60` | where long titles get truncated |
 
 To change how often the bot runs, edit the cron line in
