@@ -48,10 +48,7 @@ you ──▶ Telegram bot
 There is no server. A scheduled GitHub Actions job runs the script, and the job
 exits as soon as the queue is empty.
 
-Running this costs nothing, and that is not a trial period. GitHub Actions is
-unmetered on public repositories, Telegram bots are free, and the Notion API is
-free on every plan including the personal one. There is no server to rent and
-nothing to cancel later.
+Every piece of this is free: GitHub Actions, the Telegram bot, the Notion API.
 
 Three things follow from the design, and they are worth knowing before you set
 it up:

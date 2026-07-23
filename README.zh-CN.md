@@ -44,9 +44,7 @@
 
 没有服务器。GitHub Actions 的定时任务跑一遍脚本，队列空了就退出。
 
-跑这个东西不花钱，而且不是试用期。GitHub Actions 对公开仓库不计费，Telegram
-bot 免费，Notion API 在所有套餐（包括免费的个人版）上都免费。没有服务器要
-租，也没有什么以后需要退订。
+用到的东西全是免费的：GitHub Actions、Telegram bot、Notion API。
 
 这个设计带来三件事，装之前值得先知道：
 
