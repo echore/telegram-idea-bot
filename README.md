@@ -101,7 +101,9 @@ later and nothing breaks.
 Only the title is required. If there is no status or category column, the bot
 simply skips it and still saves the idea.
 
-<!-- TODO: add one-click template link here once the Notion template is published -->
+**Want a ready-made one?** [Duplicate this template](https://fifree.notion.site/e0dec370061f412193f60586f14d5e1b?v=56b125501fff47c88c154d50f45b94d8)
+— click **Duplicate** in the top-right corner and it lands in your workspace
+with the columns, sample entries, and views already set up.
 
 From the database URL, copy the 32-character block between your workspace name
 and the `?`. That is your **database ID**, and you will paste it in step 4.

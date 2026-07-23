@@ -89,7 +89,8 @@ Category` 都能零配置直接用，事后改列名也不会坏。
 
 只有标题是必须的。没有状态或分类列，bot 就跳过，照样把想法存进去。
 
-<!-- TODO: Notion 模板发布后，在这里加一键复制链接 -->
+**想省事？** [复制这个模板](https://fifree.notion.site/3a6942e6a59280efbb16cf3731bd4f3f?v=3a6942e6a592803c9511000cf7f43010)，点右上角
+**Duplicate**，列、示例、视图都建好了，直接进你的 workspace。
 
 从数据库的 URL 里，复制 workspace 名和 `?` 之间那串 32 位字符，这就是你的
 **database ID**，第 4 步要用。
